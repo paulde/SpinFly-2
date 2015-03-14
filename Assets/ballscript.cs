@@ -25,7 +25,6 @@ public class ballscript : MonoBehaviour {
 	public AudioClip step2;
 	public AudioClip powerups;
 	public AudioClip win;
-	
 
 	private float vel_vol = 0.3f;
 
@@ -37,33 +36,38 @@ public class ballscript : MonoBehaviour {
 	public GameObject block;
 	private BlockTop_script top;
 
+	public GUIText levelText;
+	public int totalScore;
+
 	// Use this for initialization
 	void Start () {
 		//DontDestroyOnLoad(transform.gameObject);
 		saver = GameObject.Find("Save Sphere");
 		saveScript = saver.GetComponent <Save_script> ();
 		level = saveScript.level;
+		time = saveScript.timeLeft;
+		totalScore = (int) saveScript.highScore;
 
 		hasJump = true;
 		score = 0;
 		old_score = 0;
 		displayScore ();
+		displayLevel ();
 
-		time = 60;
 		Physics.gravity = new Vector3 (0, -20, 0);
 		goalMet = false;
 
 		if (level == 1)
 		{
-			goal = 3;
+			goal = 1; //3
 		}
 		else if (level == 2)
 		{
-			goal = 7;
+			goal = 1; //7
 		}
 		else
 		{
-			goal = 15;
+			goal = 1; //15
 		}
 		
 
@@ -165,8 +169,7 @@ public class ballscript : MonoBehaviour {
 			if (Input.GetKey(KeyCode.Space) && hasJump) {
 			hasJump = false;
 			rigidbody.velocity = new Vector3( rigidbody.velocity.x, 20, rigidbody.velocity.z );
-			
-				}
+			}
 
 
 //>>>>>>> Stashed changes
@@ -178,16 +181,17 @@ public class ballscript : MonoBehaviour {
 		
 
 		displayScore ();
+		displayLevel ();
 
 		float f = (transform.position.y) / 25;
 
 		if (goalMet != true) {
-						time -= Time.fixedDeltaTime;
+			time -= Time.fixedDeltaTime;
 		}
 		//reset level when time runs out
 		if (time <= 0) {
 			float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
-			saveScript.level = 1;
+			resetVars();
 			Application.LoadLevel (Application.loadedLevel);
 		}
 		//reset game when ball falls out of bounds.
@@ -196,7 +200,7 @@ public class ballscript : MonoBehaviour {
 		if (pos.z > field_limit || pos.z < -field_limit || pos.x > field_limit || pos.x < -field_limit)
 		{
 			print ("reset");
-			saveScript.level = 1;
+			resetVars();
 			float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
 			Application.LoadLevel (Application.loadedLevel);
 		}
@@ -226,9 +230,17 @@ public class ballscript : MonoBehaviour {
 		}
 
 		if (transform.position.y >= 44) {
-			saveScript.level++;
+			saveScript.highScore = time;
 			GameObject.Find ("Fader").GetComponent<Fade> ().FadeOut ();
-			Application.LoadLevel (Application.loadedLevel);
+			if(level != 1) {
+				saveScript.level++;
+				saveScript.timeLeft = time + 60f;
+				Application.LoadLevel (Application.loadedLevel);
+			}
+			else {
+				resetVars();
+				Application.LoadLevel (0);
+			}
 		}
 
 	}
@@ -253,6 +265,7 @@ public class ballscript : MonoBehaviour {
 				else if (collisionInfo.collider.tag == "Ground") {
 					source.PlayOneShot(death, 1f);
 					saveScript.level = 1;
+					saveScript.timeLeft = 60;
 					float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
 					yield return new WaitForSeconds(fadeTime);
 					Application.LoadLevel (Application.loadedLevel);
@@ -296,7 +309,7 @@ public class ballscript : MonoBehaviour {
 	{
 		//enabled only for control mode 2
 		if (collisionInfo.tag == "BlockTop" && controlType == 2 &&
-		    !(Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W) ||
+		!(Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W) ||
 		  Input.GetKey (KeyCode.DownArrow) || Input.GetKey (KeyCode.S) ||
 		  Input.GetKey (KeyCode.RightArrow) || Input.GetKey (KeyCode.A) ||
 		  Input.GetKey (KeyCode.LeftArrow) || Input.GetKey (KeyCode.D) ||
@@ -332,7 +345,18 @@ public class ballscript : MonoBehaviour {
 
 	void displayScore()
 	{
-		scoreText.text = "Time: " + time.ToString("0") + "\nGoal: " + score.ToString () + "/" + goal + "\n";
+		scoreText.text = "Time: " + time.ToString("0") + "\nGoal: " + score.ToString () + "/" + goal + "\n"
+					   + "Score: " + totalScore.ToString();
 	}
 
+	void displayLevel() 
+	{
+		levelText.text = "Level " + level;
+	}
+
+	void resetVars() {
+		saveScript.level = 1;
+		saveScript.timeLeft = 60;
+		saveScript.highScore = 0;
+	}
 }
