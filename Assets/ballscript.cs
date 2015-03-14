@@ -5,6 +5,7 @@ public class ballscript : MonoBehaviour {
 	public Vector3 test;
 	public GUIText scoreText;
 	public int score;
+	private int old_score;
 	bool hasJump;
 	public float time;
 	public bool goalMet;
@@ -17,7 +18,14 @@ public class ballscript : MonoBehaviour {
 	public float slow_timer;
 	public float net_timer;
 	public float POWERUP_DURATION = 10;
+	public AudioSource source;
+	public AudioClip death;
+	public AudioClip step;
+	public AudioClip powerups;
+	public AudioClip win;
 
+
+	private bool win_sound = true;
 	public GameObject block;
 	private BlockTop_script top;
 
@@ -45,12 +53,18 @@ public class ballscript : MonoBehaviour {
 		net_timer = POWERUP_DURATION;
 
 		transform.position = new Vector3 (0, 30, 0);
+
+		source = GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
-
+		if (old_score != score)
+		{
+			source.PlayOneShot(powerups, 1f);
+			old_score = score;
+		}
 		if (Input.GetKey (KeyCode.Alpha1)) {
 			controlType = 1;
 		} else if (Input.GetKey (KeyCode.Alpha2)) {
@@ -161,6 +175,12 @@ public class ballscript : MonoBehaviour {
 		} 
 		if (score >= goal || Input.GetKey(KeyCode.H)) {
 			goalMet = true;
+			if (win_sound)
+			{
+				source.PlayOneShot(win, 1f);
+				win_sound = false;
+			}
+		
 		}
 
 		if (transform.position.y >= 44) {
@@ -173,14 +193,16 @@ public class ballscript : MonoBehaviour {
 	IEnumerator OnCollisionEnter(Collision collisionInfo)
 	{
 		if (collisionInfo.collider.tag == "Block") {//&& collisionInfo.contacts [0].normal.y > .99) {
-						hasJump = true;
-			
-						
-				} else if (collisionInfo.collider.tag == "Ground") {
-						float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
-						yield return new WaitForSeconds(fadeTime);
-						Application.LoadLevel (Application.loadedLevel);
-						print ("Resetting");
+				hasJump = true;
+				
+				source.PlayOneShot(step, 1f);
+				}
+				else if (collisionInfo.collider.tag == "Ground") {
+					source.PlayOneShot(death, 1f);
+					float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
+					yield return new WaitForSeconds(fadeTime);
+					Application.LoadLevel (Application.loadedLevel);
+					print ("Resetting");
 				}
 
 				//Allows players recovery
@@ -188,6 +210,7 @@ public class ballscript : MonoBehaviour {
 					rigidbody.velocity = new Vector3( rigidbody.velocity.x, 50, rigidbody.velocity.z );
 					slow_isOn = true;
 					slow_timer = POWERUP_DURATION;
+					source.PlayOneShot(powerups, 1f);
 				}
 
 				if (collisionInfo.collider.tag == "Net") {
@@ -197,12 +220,14 @@ public class ballscript : MonoBehaviour {
 					rigidbody.velocity = new Vector3( rigidbody.velocity.x, 50, rigidbody.velocity.z );
 					net_isOn = true;
 					net_timer = POWERUP_DURATION;
+					source.PlayOneShot(powerups, 1f);
 					Instantiate (Resources.Load ("Net"), new Vector3 (-0.7f, 3.4f, -0.4f), Quaternion.identity);
 				}
 
 
 			if (collisionInfo.collider.tag == "Ground")
 			{
+				
 				score = 0;
 			}
 

@@ -14,7 +14,7 @@ public class CameraScript : MonoBehaviour {
 
 		//Initiate starting position
 		x_pos = playerObj.transform.position.x;
-		z_pos = playerObj.transform.position.z - 5;
+		z_pos = playerObj.transform.position.z - 6;
 		transform.position = new Vector3 (x_pos, playerObj.transform.position.y + 18, z_pos);
 		transform.LookAt (playerObj.transform.position);
 

@@ -21,7 +21,7 @@ public class BlockTop_script : MonoBehaviour {
 		otherScript = player.GetComponent<ballscript> ();
 
 		//Determine if block is a bonus block
-		int randNum = Random.Range (1, 3);
+		int randNum = Random.Range (1, 4);
 		if (randNum == 1) 
 		{
 			isBonus = true;
