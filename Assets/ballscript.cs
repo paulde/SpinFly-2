@@ -44,9 +44,11 @@ public class ballscript : MonoBehaviour {
 		//DontDestroyOnLoad(transform.gameObject);
 		saver = GameObject.Find("Save Sphere");
 		saveScript = saver.GetComponent <Save_script> ();
+
 		level = saveScript.level;
 		time = saveScript.timeLeft;
 		totalScore = (int) saveScript.highScore;
+		//saveScript.levelText = false;
 
 		hasJump = true;
 		score = 0;
@@ -59,15 +61,16 @@ public class ballscript : MonoBehaviour {
 
 		if (level == 1)
 		{
-			goal = 1; //3
+			goal = 3; //3
 		}
 		else if (level == 2)
 		{
-			goal = 1; //7
+			saveScript.levelText = true;
+			goal = 7; //7
 		}
 		else
 		{
-			goal = 1; //15
+			goal = 15; //15
 		}
 		
 
@@ -235,7 +238,7 @@ public class ballscript : MonoBehaviour {
 		if (transform.position.y >= 44) {
 			saveScript.highScore = time;
 			GameObject.Find ("Fader").GetComponent<Fade> ().FadeOut ();
-			if(level != 1) {
+			if(level != 3) {
 				saveScript.level++;
 				saveScript.timeLeft = time + 60f;
 				Application.LoadLevel (Application.loadedLevel);

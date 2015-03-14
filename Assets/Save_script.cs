@@ -6,6 +6,7 @@ public class Save_script : MonoBehaviour {
 	public int level;
 	public float timeLeft;
 	public float highScore;
+	public bool levelText;
 
 	private static Save_script instanceRef;
 
@@ -20,6 +21,7 @@ public class Save_script : MonoBehaviour {
 			level = 1;
 			timeLeft = 60f;
 			highScore = 0;
+			levelText = true;
 		}
 		else
 		{
