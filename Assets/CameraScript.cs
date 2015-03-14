@@ -5,11 +5,35 @@ public class CameraScript : MonoBehaviour {
 
 	private float x_pos;
 	private float z_pos;
+
+	private Save_script saveScript;
+	private GameObject saver;
+	private int level;
 	GameObject playerObj;
 
 	// Use this for initialization
 	void Start () 
 	{
+
+		saver = GameObject.Find("Save Sphere");
+		saveScript = saver.GetComponent <Save_script> ();
+		level = saveScript.level;
+
+
+		if (level == 1)
+		{
+			camera.backgroundColor = new Color (0.5f, 0.3f, 0);
+		}
+		else if (level == 2)
+		{
+			camera.backgroundColor = new Color (0.0f, 0.75f, 0.82f);
+		}
+		else 
+		{
+			camera.backgroundColor = new Color (0.0f, 0.0f, 0.0f);
+		}
+
+
 		playerObj = GameObject.Find ("Player");
 
 		//Initiate starting position

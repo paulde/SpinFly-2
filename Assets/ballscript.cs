@@ -12,6 +12,7 @@ public class ballscript : MonoBehaviour {
 	public int goal;
 	public GameObject player;
 	private ballscript otherScript;
+	
 	private int controlType;
 	public bool slow_isOn;
 	public bool net_isOn;
@@ -21,9 +22,16 @@ public class ballscript : MonoBehaviour {
 	public AudioSource source;
 	public AudioClip death;
 	public AudioClip step;
+	public AudioClip step2;
 	public AudioClip powerups;
 	public AudioClip win;
+	
 
+	private float vel_vol = 0.3f;
+
+	private Save_script saveScript;
+	private GameObject saver;
+	private int level;
 
 	private bool win_sound = true;
 	public GameObject block;
@@ -31,14 +39,33 @@ public class ballscript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		//DontDestroyOnLoad(transform.gameObject);
+		saver = GameObject.Find("Save Sphere");
+		saveScript = saver.GetComponent <Save_script> ();
+		level = saveScript.level;
+
 		hasJump = true;
 		score = 0;
+		old_score = 0;
 		displayScore ();
 
 		time = 60;
 		Physics.gravity = new Vector3 (0, -20, 0);
 		goalMet = false;
-		goal = 3;
+
+		if (level == 1)
+		{
+			goal = 3;
+		}
+		else if (level == 2)
+		{
+			goal = 7;
+		}
+		else
+		{
+			goal = 15;
+		}
+		
 
 		GameObject.Find ("Fader").GetComponent<Fade> ().FadeIn ();
 
@@ -60,8 +87,10 @@ public class ballscript : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () 
 	{
+		//generate sound on point collect
 		if (old_score != score)
 		{
+			source.pitch = 1f;
 			source.PlayOneShot(powerups, 1f);
 			old_score = score;
 		}
@@ -155,7 +184,20 @@ public class ballscript : MonoBehaviour {
 		if (goalMet != true) {
 						time -= Time.fixedDeltaTime;
 		}
+		//reset level when time runs out
 		if (time <= 0) {
+			float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
+			saveScript.level = 1;
+			Application.LoadLevel (Application.loadedLevel);
+		}
+		//reset game when ball falls out of bounds.
+		Vector3 pos = transform.position;
+		float field_limit = 22f;
+		if (pos.z > field_limit || pos.z < -field_limit || pos.x > field_limit || pos.x < -field_limit)
+		{
+			print ("reset");
+			saveScript.level = 1;
+			float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
 			Application.LoadLevel (Application.loadedLevel);
 		}
 		if (slow_isOn == true) {
@@ -184,6 +226,7 @@ public class ballscript : MonoBehaviour {
 		}
 
 		if (transform.position.y >= 44) {
+			saveScript.level++;
 			GameObject.Find ("Fader").GetComponent<Fade> ().FadeOut ();
 			Application.LoadLevel (Application.loadedLevel);
 		}
@@ -194,11 +237,22 @@ public class ballscript : MonoBehaviour {
 	{
 		if (collisionInfo.collider.tag == "Block") {//&& collisionInfo.contacts [0].normal.y > .99) {
 				hasJump = true;
-				
-				source.PlayOneShot(step, 1f);
+				float hit_vol = collisionInfo.relativeVelocity.magnitude * vel_vol;
+				float decider = Random.Range(0f, 1f);
+				if (decider > 0.5f)
+				{
+					source.PlayOneShot(step, vel_vol);
+				}
+				else 
+				{
+					source.PlayOneShot(step2, vel_vol);
+				}
+
+
 				}
 				else if (collisionInfo.collider.tag == "Ground") {
 					source.PlayOneShot(death, 1f);
+					saveScript.level = 1;
 					float fadeTime = GameObject.Find ("Player").GetComponent<Fade>().BeginFade(1);
 					yield return new WaitForSeconds(fadeTime);
 					Application.LoadLevel (Application.loadedLevel);
@@ -240,8 +294,8 @@ public class ballscript : MonoBehaviour {
 
 	void OnTriggerStay (Collider collisionInfo)
 	{
-		//disabled by false
-		if (collisionInfo.tag == "BlockTop" && false &&
+		//enabled only for control mode 2
+		if (collisionInfo.tag == "BlockTop" && controlType == 2 &&
 		    !(Input.GetKey (KeyCode.UpArrow) || Input.GetKey (KeyCode.W) ||
 		  Input.GetKey (KeyCode.DownArrow) || Input.GetKey (KeyCode.S) ||
 		  Input.GetKey (KeyCode.RightArrow) || Input.GetKey (KeyCode.A) ||

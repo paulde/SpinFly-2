@@ -6,18 +6,82 @@ public class BlockScript : MonoBehaviour {
 	public Vector3 vel;
 	public float speed;
 	public float original_speed;
+	public Material level_1_mat_1;
+	public Material level_1_mat_2;
+	public Material level_2_mat_1;
+	public Material level_2_mat_2;
+	public Material level_3_mat_1;
+	public Material level_3_mat_2;
+	public Material Level_1_floor_mat;
+	public Material Level_2_floor_mat;
+	public Material Level_3_floor_mat;
+
+	private int old_level = 0;
+
+	private Renderer rend;
 
 	public GameObject player;
 	private ballscript otherScript;
 
+	private Save_script saveScript;
+	private GameObject saver;
+	private int level;
+
 	// Use this for initialization
 	void Start () {
 
-		speed = Random.Range( 2, 5 );
+
+		saver = GameObject.Find("Save Sphere");
+		saveScript = saver.GetComponent <Save_script> ();
+		level = saveScript.level;
+
+		speed = Random.Range( 2.0f, 5.0f );
 		original_speed = speed;
+
+		rend = GetComponent<Renderer>();
+		//level_1_mat = Resources.Load("Materials/lambert1", typeof(Material)) as Material;
 
 		player = GameObject.Find("Player");
 		otherScript = player.GetComponent<ballscript> ();
+
+		GameObject floor = GameObject.Find("pPlane1");
+		Renderer floor_rend = floor.GetComponent<Renderer>();
+
+		GameObject earth = GameObject.Find("earth");
+		Renderer earth_rend = earth.GetComponent<Renderer>();
+
+		GameObject lava_sparks = GameObject.Find("Lava Sparks");
+		ParticleSystem sparks_rend = lava_sparks.GetComponent<ParticleSystem>();
+
+
+		Material[] mats = null;
+		Material floor_mat;
+
+		if (level == 1)
+		{
+			mats = new Material[]{level_1_mat_1, level_1_mat_1, level_1_mat_2};
+			floor_mat = Level_1_floor_mat;
+			earth_rend.enabled = false;
+
+		}
+		else if (level == 2)
+		{
+			mats = new Material[]{level_2_mat_1, level_2_mat_1, level_2_mat_2};
+			floor_mat = Level_2_floor_mat;
+			sparks_rend.Stop();
+			earth_rend.enabled = false;
+		}
+		else
+		{
+			mats = new Material[]{level_3_mat_1, level_3_mat_1, level_3_mat_2};
+			floor_mat = Level_3_floor_mat;
+			sparks_rend.Stop();
+			floor_rend.enabled = false;
+			earth_rend.enabled = true;
+		}
+
+		floor_rend.material = floor_mat;
+		rend.materials = mats;
 		
 	}
 
@@ -51,6 +115,13 @@ public class BlockScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
+
+
+		//gameObject.GetComponent<BlockTop_script> ().vel;
+
+
+		//int curr_level = GameObject.Find ("Player").GetComponent<"Block Script">.level;
+
 		float f = (transform.position.y) / 4;
 		if (otherScript.goalMet == true) 
 		{
