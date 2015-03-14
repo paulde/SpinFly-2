@@ -171,6 +171,9 @@ public class ballscript : MonoBehaviour {
 			rigidbody.velocity = new Vector3( rigidbody.velocity.x, 20, rigidbody.velocity.z );
 			}
 
+			if (Input.GetKey (KeyCode.Escape) )
+				Application.LoadLevel(0);
+
 
 //>>>>>>> Stashed changes
 			if(rigidbody.velocity.magnitude > max_speed)
